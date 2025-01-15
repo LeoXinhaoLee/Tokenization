@@ -49,7 +49,7 @@ def tokenize_books():
     datamodule.setup(stage='fit')
 
 def tokenize_dclm():
-    dataset_name = '/persistent_dclm/datasets/dclm_200B_raw'
+    dataset_name = '/persistent_dclm/datasets/dclm_200B_text'
     dataset_config_name = None
     cache_dir = Path('/persistent_dclm/datasets/dclm_200B_tok_la2')
     num_workers = num_cpu_cores() // 2

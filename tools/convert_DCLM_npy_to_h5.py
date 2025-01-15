@@ -18,12 +18,20 @@ output_dir = '/home/yusu/new_home/datasets/dclm_200B_tok_la2_h5/tokenizer_name-m
 os.makedirs(output_dir, exist_ok=True)
 output_file = osp.join(output_dir, 'train_part1.h5')
 
-
-chunk_size = 268435456 * 8  # this number of int16 -> 1GB * 2 = 8GB
+batch_size = (4 * 1024 * 1024 * 1024) * 2  # this number of int16 -> 4GB * 2 = 8GB
 
 with h5py.File(output_file, 'a') as f_out:
     if 'train_dataset' not in f_out:
-        dset = f_out.create_dataset('train_dataset', shape=(0,), maxshape=(None,), dtype='int32')
+        # dset = f_out.create_dataset('train_dataset', shape=(0,), maxshape=(None,), dtype='int16')  # la2 tokenizer vocab: int16
+        chunk_size = 2048
+        dset = f_out.create_dataset(
+            'train_dataset',
+            shape=(0,),
+            maxshape=(None,),
+            dtype='int16',
+            chunks=(chunk_size,),
+            compression='gzip',
+        )
     else:
         dset = f_out['train_dataset']
 
@@ -35,8 +43,8 @@ with h5py.File(output_file, 'a') as f_out:
         total_size = data.shape[0]
 
         # Process the data in chunks
-        for start in tqdm(range(0, total_size, chunk_size), "Processing chunks"):
-            end = min(start + chunk_size, total_size)
+        for start in tqdm(range(0, total_size, batch_size), "Processing chunks"):
+            end = min(start + batch_size, total_size)
             chunk = data[start:end]  # Only this chunk is loaded into memory
 
             # Resize and append chunk
@@ -48,10 +56,8 @@ with h5py.File(output_file, 'a') as f_out:
             del chunk
             gc.collect()
 
-        # Ensure memory from current npy file is released
-        del data  # delete memory-mapped object
-        gc.collect()  # force garbage collection to free memory
+        del data
+        gc.collect()
 
-# print(f'Total token count: {dset.shape[0]}')
 print(f'Add token: {token_count}')
 print(f'Data saved to {output_file}')

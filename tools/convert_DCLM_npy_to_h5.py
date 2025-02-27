@@ -19,7 +19,7 @@ all_npy_files = [
 ]
 
 # output_dir = '/home/yusu/new_home/datasets/books3_splitted_doubletrain_finetune_tokenized_H5/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
-output_dir = '/dfs/user/roed/projects/xh/datasets/books3_splitted_doubletrain_finetune_tokenized_H5/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
+output_dir = '/dfs/user/roed/projects/xh/datasets/books3_splitted_doubletrain_finetune_tokenized_H5_uint16/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
 os.makedirs(output_dir, exist_ok=True)
 output_file = osp.join(output_dir, 'data.h5')
 
@@ -39,7 +39,7 @@ with h5py.File(output_file, 'a') as f_out:
                 key,
                 shape=(0,),
                 maxshape=(None,),
-                dtype='int16',
+                dtype='uint16',
                 chunks=(chunk_size,),
                 compression='gzip',
             )

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+export UV_PROJECT_ENVIRONMENT=/tmp/$USER/uvenvs/${PWD##*/}
+export UV_CACHE_DIR=/tmp/$USER/.cache/uv 
+export UV_PYTHON_BIN_DIR=/tmp/$USER/.cache/uv_bin 
+export UV_PYTHON_INSTALL_DIR=/tmp/$USER/.cache/uv_python 
+
+uv "$@"

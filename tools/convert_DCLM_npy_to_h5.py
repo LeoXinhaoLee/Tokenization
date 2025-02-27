@@ -3,20 +3,23 @@ import os.path as osp
 from tqdm import tqdm
 import gc
 import numpy as np
+import pickle
 import h5py
 
 
-input_dir = '/home/yusu/new_home/datasets/books3_splitted_doubletrain_finetune_tokenized/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
+# input_dir = '/home/yusu/new_home/datasets/books3_splitted_doubletrain_finetune_tokenized/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
+input_dir = '/dfs/user/roed/projects/xh/datasets/books3_splitted_doubletrain_finetune_tokenized/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
 all_npy_files = [
     # '/home/yusu/new_home/datasets/dclm_200B_tok_la2/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False/train_part1.npy',
-    # 'train_part1.npy',
-    # 'train_part2.npy',
-    # 'finetune.npy',
-    # 'test.npy',
-    # 'validation.npy',
+    'train_part1.npy',
+    'train_part2.npy',
+    'finetune.npy',
+    'test.npy',
+    'validation.npy',
 ]
 
-output_dir = '/home/yusu/new_home/datasets/books3_splitted_doubletrain_finetune_tokenized_H5/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
+# output_dir = '/home/yusu/new_home/datasets/books3_splitted_doubletrain_finetune_tokenized_H5/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
+output_dir = '/dfs/user/roed/projects/xh/datasets/books3_splitted_doubletrain_finetune_tokenized_H5/tokenizer_name-meta-llama/Llama-2-7b-hf-val_ratio-0.0005-val_split_seed-2357-add_eos-True-detokenize-False'
 os.makedirs(output_dir, exist_ok=True)
 output_file = osp.join(output_dir, 'data.h5')
 
@@ -65,5 +68,13 @@ with h5py.File(output_file, 'a') as f_out:
         print(f'Total tokens in {key}: {dset.shape[0]}')
 
     if "tokenizer" not in f_out:
-        serialized_tokenizer = pickle.dumps(osp.join(input_dir, "tokenizer.pkl"))
-        f_out.create_dataset("tokenizer", data=np.void(serialized_tokenizer))
+        with open(osp.join(input_dir, "tokenizer.pkl"), "rb") as f:
+            tokenizer = pickle.load(f)
+        tokenizer_bytes = pickle.dumps(tokenizer)
+        tokenizer_np = np.void(tokenizer_bytes)
+        f_out.create_dataset("tokenizer", data=tokenizer_np)
+
+        ## Example to extract tokenizer
+        # with h5py.File("tokenizer.h5", "r") as hf:
+        #     tokenizer_np = hf["tokenizer"][()]
+        #     tokenizer = pickle.loads(tokenizer_np.tobytes())  # Convert back to Python object

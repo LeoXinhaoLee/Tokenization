@@ -3,7 +3,7 @@ name = "Tokenization"
 version = "0.1.0"
 description = "Tokenizing datasets"
 readme = "README.md"
-requires-python = ">=3.10, <=3.11"
+requires-python = ">=3.11"
 dependencies = [
   "pytest==8.3.2",
   "python-dotenv==1.0.1",
@@ -12,7 +12,7 @@ dependencies = [
   "transformers==4.44.1",
   "datasets==2.18.0",
   "tokenizers==0.19.1",
-  "numpy==1.26.4",
+  "numpy>=1.26.4",
   "huggingface_hub==0.24.6",
   "tqdm==4.66.5",
   "multiprocess==0.70.16",
@@ -22,7 +22,9 @@ dependencies = [
   "zstandard",
   "ray",
   "h5py",
-  "zarr",
+  "fsspec",
+  "numcodecs",
+  "zarr==3.0.4",
 ]
 
 [[tool.uv.index]]

@@ -7,7 +7,7 @@ awk '
     sub("\\?download=true", "", url);
     split(url, parts, "/");
     filename = parts[length(parts)-2] "_" parts[length(parts)-1] "_" parts[length(parts)];
-    print url, "/persistent_dclm/datasets/DCLM-200B-RAW/" filename;
+    print url, "/lustre/fs1/portfolios/nvr/projects/nvr_lacr_llm/users/yusu/datasets/dclm-600B-process/DCLM-600B-RAW/" filename;
 }' links.txt > processed_links.txt
 
 (2) Download all items with 8 processes
@@ -30,10 +30,18 @@ num_total_file = num_global_shards * num_local_shards * num_json
 print(f'Total shards number: {num_total_file}')
 
 file_abs_id = [i for i in range(num_total_file)]
-sampled_abs_id = random.sample(file_abs_id, math.ceil(num_total_file / 20))  # 4T tokens -> 200B tokens
-print(f'Sample shards number: {len(sampled_abs_id)}')
+sampled_200B_abs_id = random.sample(file_abs_id, math.ceil(num_total_file / 20))  # 4T tokens -> 200B tokens
+print(f'Sample 200B shards number: {len(sampled_200B_abs_id)}')
 
-link_format = 'https://huggingface.co/datasets/mlfoundations/dclm-baseline-1.0/tree/main/global-shard_{:02}_of_10/local-shard_{}_of_10/shard_{:08}_processed.jsonl.zst?download=true'
+remaining_file_abs_id = list(set(file_abs_id) - set(sampled_200B_abs_id))
+sampled_500B_abs_id = random.sample(remaining_file_abs_id, math.ceil(num_total_file / 8))  # 4T tokens -> 500B tokens
+print(f'Sample 500B shards number: {len(sampled_500B_abs_id)}')
+
+sampled_abs_id = sampled_200B_abs_id + sampled_500B_abs_id
+print(f'Sample 700B shards number: {len(sampled_abs_id)}')
+assert len(sampled_abs_id) == len(set(sampled_abs_id)), "File abs IDs have duplication!"
+
+link_format = 'https://huggingface.co/datasets/mlfoundations/dclm-baseline-1.0/resolve/main/global-shard_{:02}_of_10/local-shard_{}_of_10/shard_{:08}_processed.jsonl.zst'
 
 link_list = []
 for abs_id in sampled_abs_id:
@@ -43,7 +51,7 @@ for abs_id in sampled_abs_id:
     link = link_format.format(global_id + 1, local_id, file_id)
     link_list.append(link)
 
-with open("./tools/links.txt", "w") as f:
+with open("links.txt", "w") as f:
     for link in link_list:
         f.write(link + "\n")
 

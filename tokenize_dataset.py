@@ -1,3 +1,24 @@
+# /// script
+# dependencies = [
+#     "zstandard>=0.24.0",
+#     "tqdm>=4.67.1",
+#     "pytest==8.3.2",
+#     "python-dotenv==1.0.1",
+#     "pytorch-lightning==2.4.0",
+#     "torch>=2.1.1",
+#     "transformers==4.44.1",
+#     "datasets==2.18.0",
+#     "tokenizers==0.19.1",
+#     "numpy==1.26.4",
+#     "huggingface_hub==0.24.6",
+#     "multiprocess==0.70.16",
+#     "pyarrow== 17.0.0",
+#     "pyarrow-hotfix==0.6",
+#     "pandas==2.2.2",
+#     "ray",
+#     "h5py",
+# ]
+# ///
 """
 @Xinhao
 c3d-standard-180 180 vCPUs 720GB mem --> num_workers=16
@@ -24,7 +45,8 @@ def num_cpu_cores():
         return len(os.sched_getaffinity(0))
 
 
-def tokenize_books():
+def tokenize_books(part):
+    del part
     batch_size = 8
     dataset_name = 'books3_splitted_finetune'  # useless
     dataset_config_name = None
@@ -48,12 +70,12 @@ def tokenize_books():
     datamodule.prepare_data()
     datamodule.setup(stage='fit')
 
-def tokenize_dclm():
-    dataset_name = '/persistent_dclm/datasets/dclm_200B_text'
+def tokenize_dclm(part):
+    dataset_name = f'/lustre/fs1/portfolios/nvr/projects/nvr_lacr_llm/users/yusu/datasets/dclm-600B-process/DCLM-600B-RAW-text/part_{part}'
     dataset_config_name = None
-    cache_dir = Path('/persistent_dclm/datasets/dclm_200B_tok_la2')
+    cache_dir = Path(f'/lustre/fs1/portfolios/nvr/projects/nvr_lacr_llm/users/yusu/datasets/dclm-600B-process/DCLM-600B_tok_la2/part_{part}')
     num_workers = num_cpu_cores() // 2
-    val_ratio = 0.05 # 5B out of 200B: 0.025 -> 0.05 to be safe
+    val_ratio = 0.03  # 20B out of 700B: 0.028 -> 0.03 to be safe
     datamodule = LMDataModule(
         dataset_name,
         tokenizer_name='meta-llama/Llama-2-7b-hf',
@@ -76,8 +98,9 @@ tokenize_fn_dict = {
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default="dclm")
+    parser.add_argument('--part', type=str, default="0")
     args = parser.parse_args()
 
     assert args.dataset in tokenize_fn_dict.keys()
 
-    tokenize_fn_dict[args.dataset]()
+    tokenize_fn_dict[args.dataset](args.part)
